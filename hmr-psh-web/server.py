@@ -46,8 +46,8 @@ def index():
         "Prøve: ",
         "Possisjon i kjøring: "
     ]
-    # db = os.environ['POOLING_DB_URL']
-    db = "/var/tmp/psh.db"
+    db = os.environ['POOLING_DB_URL']
+    # db = "/var/tmp/psh.db"
     if request.method == 'POST':
         sample = request.form['sample']
         lookup = SamplesLookup(db)
