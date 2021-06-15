@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+    <h1>HMR Mikrobiologi prøvesøk</h1>
+    <form method="POST">
+        <p>
+            <label for="sample">Sample: </label>
+            <input id="sample" name="sample" type="text">
+        </p>
+        <input type="submit" value="Søk">
+    </form>
+    {% if data %}
+        {% if data|length > 1 %}
+            <h2>Kjøringer for prøve {{ sample }}:</h2>
+        {% else %}
+            <h2>Kjøring for prøve {{ sample }}:</h2>
+        {% endif%}
+        <table>
+            {% for run in data %}
+                {% for i in range(run|length) %}
+                    {% if (i == 0) %}
+                        {% if run_number != None %}
+                            <tr>
+                                <td>{{ text[i] + run[i] + "; Muligens coro " + run_number }}</td>
+                            </tr>
+                        {% endif %}
+                    {% else %}
+                        <tr>
+                            <td>{{ text[i] + run[i] }}</td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+            {% if data|length > 1 %}
+                <tr>
+                    <td>-------------</td>
+                </tr>
+            {% endif%}
+            {% endfor %}
+        </table>
+    {% elif sample %}
+        <p>Finner ikke prøven, er den kjørt på PSH?</p>
+    {% endif %}
+{% endblock %}
