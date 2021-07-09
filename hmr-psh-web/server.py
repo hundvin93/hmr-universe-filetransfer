@@ -46,18 +46,21 @@ def index():
         "Prøve: ",
         "Possisjon i kjøring: "
     ]
-    db = os.environ['POOLING_DB_URL']
-    # db = "/var/tmp/psh.db"
+    # db = os.environ['POOLING_DB_URL']
+    db = "/var/tmp/psh.db"
     if request.method == 'POST':
         sample = request.form['sample']
         lookup = SamplesLookup(db)
         data = lookup.get_run(sample=sample)
         if data:
-            run_number = lookup.get_run_number(data[0][0])
+            run_number =[]
+            for i in data:
+                run_number.append(lookup.get_run_number(i[0]))
+            # run_number = lookup.get_run_number(data[0][0])
         else:
             run_number = -1
 
-    return render_template('index.html', data=data, sample=sample, text=text, run_number=str(run_number))
+    return render_template('index.html', data=data, sample=sample, text=text, run_number=run_number)
 
 
 if __name__ == '__main__':

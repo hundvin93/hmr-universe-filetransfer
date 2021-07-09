@@ -19,11 +19,12 @@
         {% endif%}
         <table>
             {% for run in data %}
+                {% set outer_loop = loop %}
                 {% for i in range(run|length) %}
                     {% if (i == 0) %}
                         {% if run_number != None %}
                             <tr>
-                                <td>{{ text[i] + run[i] + "; Muligens coro " + run_number }}</td>
+                                <td>{{ text[i] + run[i] + "; Muligens coro " + run_number[outer_loop.index - 1]|string }}</td>
                             </tr>
                         {% endif %}
                     {% else %}
