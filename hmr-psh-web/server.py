@@ -31,10 +31,10 @@ class PoolLookup:
         if "POOL" not in pool_id:
             pool_id = '%' + pool_id + '%'
             sample = pool_id
-            cur.execute('''SELECT pool_id FROM Samples where sample_id like %?%''',(sample,))
+            cur.execute('''SELECT pool_id FROM Samples where sample_id like ?''',(sample,))
             pool_ids = cur.fetchall()
             for i in pool_ids:
-                 data_list.append(self.get_pool(i))
+                data_list += (self.get_pool(i[0]))
             ## her kan man legge til PSH support
         else:
             cur.execute('''SELECT * FROM Pools where pool_id like ?''', (pool_id,))
@@ -46,7 +46,18 @@ class PoolLookup:
                 for sample in all_samples:
                     if(sample[0] == i[0]):
                         samples.append(sample[1])
-                data_list.append(list(i)+samples)
+
+                run_id = i[0]
+                date = i[1]
+                pool_id = i[2]
+                well = i[3]
+                comment = i[4]
+                run_rumber = i[5]
+                # data.append(list(i) + [None])
+                new_data = [run_id, date, pool_id, samples, well, comment, run_rumber]
+                # new_data = list(i)
+                # new_data.append(samples)
+                data_list.append(new_data)
         return data_list
 
 
@@ -75,7 +86,20 @@ class SamplesLookup:
         self.__ensure_connection()
         cur = self.conn.cursor()
         cur.execute('''SELECT * FROM Run where sample_id=?''',(sample,))
-        return cur.fetchall()
+        fetch = list(cur.fetchall())
+        data = []
+        for i in fetch:
+            run_id = i[0]
+            date = i[1]
+            pool_id = None
+            samples = [i[2]]
+            well = i[3]
+            comment = i[4]
+            run_rumber = i[5]
+            # data.append(list(i) + [None])
+            data.append([run_id, date, pool_id, samples, well, comment, run_rumber])
+        return data
+        # return list(cur.fetchall())
 
     def get_run_number(self, run_id):
         self.__ensure_connection()
@@ -90,14 +114,13 @@ app = Flask(__name__)
 def index():
     data = None
     sample = None
-    run_number = None
     text = [
         "Kjøring: ",
-        "Klokken: ",
-        "Pool ID",
+        "Dato: ",
+        "Pool ID: ",
         "Prøve: ",
         "Possisjon i kjøring: ",
-        "Kommentar:"
+        "Kommentar: "
     ]
     db = os.environ['DB_URL']
     pool_db = os.environ['POOLING_DB_URL']
@@ -105,10 +128,9 @@ def index():
 
     if request.method == 'POST':
         sample = request.form['sample']
-        er_pool = isPool(sample)
-        # lookup = SamplesLookup(db)
+        lookup = SamplesLookup(db)
         pool_lookup = PoolLookup(pool_db)
-        data = pool_lookup.get_pool(sample)
+        data = lookup.get_run(sample=sample) + pool_lookup.get_pool(sample)
         # data = lookup.get_run(sample=sample)
         # if data:
         #     run_number = []
@@ -118,10 +140,8 @@ def index():
         # else:
         #     run_number = -1
 
-    return render_template('index.html', data=data, sample=sample, text=text, run_number=run_number)
+    return render_template('index.html', data=data, sample=sample, text=text)
 
-def isPool(s):
-    return "POOL" in s
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001)

@@ -20,29 +20,18 @@
         <table>
             {% for run in data %}
                 {% set outer_loop = loop %}
-                {% set run_number = run[-1] %}
-
-                {% for i in range(text|length) %}
-                    {% if i == 0 %}
-                        <tr>
-                            <td>{{ text[i] + run[i] + "; Muligens coro/pool " + run_number|string }}</td>
-                        </tr>
-                    {% else %}
-                        {% if run[i] %}
-                            {% if run[i] is iterable and run[i] is not string %}
-                                {% for j in run[i] %}
-                                    <tr>
-                                        <td>{{ text[i] + j }}</td>
-                                    </tr>
-                                {% endfor %}
-                            {% else %}
-                                <tr>
-                                    <td>{{ text[i] + run[i] }}</td>
-                                </tr>
-                            {% endif %}
+                {% for i in range(run|length) %}
+                    {% if (i == 0) %}
+                        {% if run_number != None %}
+                            <tr>
+                                <td>{{ text[i] + run[i] + "; Muligens coro " + run_number[outer_loop.index - 1]|string }}</td>
+                            </tr>
                         {% endif %}
+                    {% else %}
+                        <tr>
+                            <td>{{ text[i] + run[i] }}</td>
+                        </tr>
                     {% endif %}
-
                 {% endfor %}
             {% if data|length > 1 %}
                 <tr>
