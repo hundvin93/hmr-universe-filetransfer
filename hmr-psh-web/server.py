@@ -128,6 +128,8 @@ def index():
 
     if request.method == 'POST':
         sample = request.form['sample']
+        if sample:
+            sample = sample.upper()
         lookup = SamplesLookup(db)
         pool_lookup = PoolLookup(pool_db)
         data = lookup.get_run(sample=sample) + pool_lookup.get_pool(sample)
