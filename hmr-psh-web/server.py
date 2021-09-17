@@ -34,7 +34,21 @@ class PoolLookup:
             cur.execute('''SELECT pool_id FROM Samples where sample_id like ?''',(sample,))
             pool_ids = cur.fetchall()
             for i in pool_ids:
-                data_list += (self.get_pool(i[0]))
+                if "POOL" in i[0]:
+                    data_list += (self.get_pool(i[0]))
+                else:
+                    cur.execute('''SELECT * FROM Pools where pool_id like ?''', (pool_id,))
+                    data = cur.fetchall()
+                    for i in data:
+                        run_id = i[0]
+                        date = i[1]
+                        sample = i[2]
+                        well = i[3]
+                        comment = i[4]
+                        run_rumber = i[5]
+                        new_data = [run_id, date, pool_id, sample, well, comment, run_rumber]
+                        data_list.append(new_data)
+
             ## her kan man legge til PSH support
         else:
             cur.execute('''SELECT * FROM Pools where pool_id like ?''', (pool_id,))
