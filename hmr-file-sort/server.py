@@ -53,14 +53,21 @@ def process_file(file, singel_dir, pool_dir):
             num += 1
         else:
             new_file = new_file.replace(surname, "_" + str(num) + surname)
-    time.sleep(2)
+
     log.info(f"moving {file} into {target_dir}")
-    while os.path.exists(file):
+    if os.path.exists(file):
         try:
             shutil.move(file, new_file)
         except Exception as err:
             log.error(err)
             time.sleep(2)
+
+    while os.path.exists(file):
+        log.info(f"File {file} still exists after moving")
+        try:
+            os.remove(file)
+        except Exception as err:
+            log.error(err)
 
 
 def process_dir(dir, single_dir, pool_dir):

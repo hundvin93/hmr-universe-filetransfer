@@ -46,6 +46,7 @@ class PoolLookup:
                         well = i[3]
                         comment = i[4]
                         run_rumber = i[5]
+                        pool_id = "Prøven er singel i et pool oppsett!"
                         new_data = [run_id, date, pool_id, sample, well, comment, run_rumber]
                         data_list.append(new_data)
 
@@ -73,11 +74,6 @@ class PoolLookup:
                 # new_data.append(samples)
                 data_list.append(new_data)
         return data_list
-
-
-
-
-
 
 
 class SamplesLookup:
