@@ -5,7 +5,7 @@ import os
 import shlex
 import sys
 import subprocess as sp
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, STDOUT
 from time import sleep
 
 log = logging.getLogger(__name__)
@@ -38,13 +38,14 @@ def is_mounted(pi_dir):
     return False
 
 
-def process_dir(ip, dir, user, target_ip, target_dir, target_user, arkiv_dir):
+def process_dir(ip, dir, user, target_ip, target_dir, target_user, arkiv_dir, pi_sshkey):
     files = []
     log.info("calling SSH")
-    call = f"ssh {user}@{ip}"
-    log.info("CALLED ssh")
+    call = f"ssh -i {pi_sshkey} {user}@{ip}"
     sshProcess = Popen(shlex.split(call), stdin=sp.PIPE, stdout=sp.PIPE, universal_newlines=True, bufsize=0)
+    log.info("CALLED ssh")
     sshProcess.stdin.write(f'cd {dir}\n')
+    print("hello")
     sshProcess.stdin.write('echo START\n')
     sshProcess.stdin.write('ls\n')
     sshProcess.stdin.write("echo END\n")
@@ -60,9 +61,23 @@ def process_dir(ip, dir, user, target_ip, target_dir, target_user, arkiv_dir):
         if line == "START\n":
             start = True
     for file in files:
-        scp_call = f'scp {file} {target_user}@{target_ip}:{target_dir}'
+        new_local_file = os.path.join(target_dir,file)
+        test_dir = os.path.join(dir,file)
+        print(test_dir)
+        scp_call = f'scp -i {pi_sshkey} {user}@{ip}:{test_dir} {target_dir}'
+        # scp_call = f'scp -i {pi_sshkey} {new_local_file} {user}@{ip}:{test_dir}'
+        print(scp_call)
+        # scp_call = f'scp {file} {target_user}@{target_ip}:{target_dir}'
         mv_call = f'mv {file} {arkiv_dir}'
-        sshProcess.stdin.write(f'{scp_call}\n')
+        log.info("calling SCP")
+        # scpProcess = Popen(shlex.split(scp_call), stdin=sp.PIPE, stdout=sp.PIPE, universal_newlines=True, bufsize=0)
+        # scpProcess = Popen(shlex.split(scp_call), stdin=sp.PIPE, stdout=sp.PIPE, stderr=STDOUT, bufsize=0)
+        scpProcess = Popen(shlex.split(scp_call))
+        sts = os.waitpid(scpProcess.pid,0)
+        # scpProcess.stdin.close()
+        log.info("CALLED SCP")
+        # sshProcess.stdin.write(f'cd {dir}\n')
+        # sshProcess.stdin.write(f'{scp_call}\n')
         sshProcess.stdin.write(f'{mv_call}\n')
         log.info(f'moving and copying {file}')
     sshProcess.stdin.write("logout\n")
@@ -121,6 +136,8 @@ if __name__ == '__main__':
                         help='Ffill in')
     parser.add_argument("--univ-arkiv", dest='univ_arkiv', required=True,
                         help='fill in')
+    parser.add_argument("--pi-sshkey", dest='pi_sshkey', required=True,
+                        help='fill in')
 
     args = parser.parse_args()
 
@@ -129,7 +146,7 @@ if __name__ == '__main__':
         if check_connection(args.univ_ip):
             try:
                 process_dir(args.univ_ip, args.univ_dir, args.univ_user,
-                            args.pi_ip, args.pi_dir, args.pi_user, args.univ_arkiv)
+                            args.pi_ip, args.pi_dir, args.pi_user, args.univ_arkiv, args.pi_sshkey)
             except Exception as err:
                 log.error(err)
         else:
